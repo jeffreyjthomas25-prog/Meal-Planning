@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recipe Book & Daily Meal Prep</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; margin:0; }
+        .container { max-width: 800px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+        h1, h2 { text-align: center; color:#333; }
+        nav { background: #eee; padding: 8px 0; text-align: center;}
+        nav a { margin: 0 15px; color: #333; text-decoration: none; font-weight: bold; }
+        nav a.active { color: #009688; }
+        .hidden { display: none; }
+        .recipe-list { list-style: none; padding: 0;}
+        .recipe-list li { padding: 10px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;}
+        .recipe-btns button { margin-left: 8px; }
+        label { display: block; margin-top: 12px; font-weight: bold;}
+        input[type=text], textarea { width: 100%; padding: 8px; margin-top: 6px; border-radius: 4px; border: 1px solid #ddd;}
+        textarea { resize: vertical;}
+        button, .btn { background: #009688; color: #fff; border: none; border-radius: 5px; padding: 8px 16px; margin-top: 12px; cursor: pointer; }
+        button:hover, .btn:hover { background: #00796B; }
+        .card { background: #fafafa; border-radius: 6px; box-shadow: 0 1px 3px #ccc; padding: 15px; margin-bottom: 20px;}
+        .alert { background: #ffe0e0; color: #d32f2f; padding: 10px; border-radius: 4px; text-align: center; margin-top: 16px;}
+        @media (max-width:600px) { .container { padding: 8px; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" id="nav-home" onclick="showSection('home')">Home</a>
+        <a href="#" id="nav-add" onclick="showSection('add')">Add Recipe</a>
+        <a href="#" id="nav-book" onclick="showSection('book')">Recipe Book</a>
+        <a href="#" id="nav-meal" onclick="showSection('meal')">Daily Meal Prep</a>
+    </nav>
+    <div class="container">
+        <!-- Home -->
+        <section id="home-section">
+            <h1>Recipe Book & Daily Meal Prep</h1>
+            <p style="text-align:center;">Add your recipes, organize them, and get daily meal plans!</p>
+        </section>
+        <!-- Add Recipe -->
+        <section id="add-section" class="hidden">
+            <h2>Add New Recipe</h2>
+            <form id="add-form">
+                <label for="add-title">Recipe Title</label>
+                <input type="text" id="add-title" required>
+                <label for="add-ingredients">Ingredients (one per line)</label>
+                <textarea id="add-ingredients" rows="4" required></textarea>
+                <label for="add-instructions">Instructions</label>
+                <textarea id="add-instructions" rows="6" required></textarea>
+                <button type="submit">Add Recipe</button>
+            </form>
+        </section>
+        <!-- Recipe Book -->
+        <section id="book-section" class="hidden">
+            <h2>Recipe Book</h2>
+            <ul id="recipe-list" class="recipe-list"></ul>
+            <div id="no-recipes" class="alert" style="display:none;">No recipes yet. Add some first!</div>
+        </section>
+        <!-- View/Edit Recipe -->
+        <section id="view-section" class="hidden">
+            <div class="card">
+                <h2 id="view-title"></h2>
+                <h4>Ingredients</h4>
+                <pre id="view-ingredients"></pre>
+                <h4>Instructions</h4>
+                <pre id="view-instructions"></pre>
+                <button id="edit-btn" onclick="editRecipe()">Edit</button>
+                <button onclick="showSection('book')">Back to Book</button>
+            </div>
+        </section>
+        <section id="edit-section" class="hidden">
+            <h2>Edit Recipe</h2>
+            <form id="edit-form">
+                <label for="edit-title">Recipe Title</label>
+                <input type="text" id="edit-title" required>
+                <label for="edit-ingredients">Ingredients (one per line)</label>
+                <textarea id="edit-ingredients" rows="4" required></textarea>
+                <label for="edit-instructions">Instructions</label>
+                <textarea id="edit-instructions" rows="6" required></textarea>
+                <button type="submit">Save Changes</button>
+                <button type="button" onclick="showSection('view')">Cancel</button>
+            </form>
+        </section>
+        <!-- Daily Meal Prep -->
+        <section id="meal-section" class="hidden">
+            <h2>Daily Meal Prep</h2>
+            <div id="meal-content"></div>
+            <button onclick="showDailyMeal()">Suggest New Meals</button>
+        </section>
+    </div>
+    <script>
+    // --- State ---
+    let recipes = [];
+    let currentId = null;
+
+    // --- Storage Helpers ---
+    function loadRecipes() {
+        try {
+            recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
+        } catch { recipes = []; }
+    }
+    function saveRecipes() {
+        localStorage.setItem('recipes', JSON.stringify(recipes));
+    }
+
+    // --- Navigation ---
+    function showSection(name) {
+        ['home','add','book','meal','view','edit'].forEach(s => {
+            document.getElementById(s+'-section').classList.add('hidden');
+            document.getElementById('nav-'+s)?.classList.remove('active');
+        });
+        document.getElementById(name+'-section').classList.remove('hidden');
+        document.getElementById('nav-'+name)?.classList.add('active');
+        if(name==='book') renderBook();
+        if(name==='meal') showDailyMeal();
+    }
+
+    // --- Add Recipe ---
+    document.getElementById('add-form').onsubmit = function(e) {
+        e.preventDefault();
+        const title = document.getElementById('add-title').value.trim();
+        const ingredients = document.getElementById('add-ingredients').value.trim();
+        const instructions = document.getElementById('add-instructions').value.trim();
+        if(title && ingredients && instructions){
+            const id = Date.now();
+            recipes.push({id, title, ingredients, instructions});
+            saveRecipes();
+            this.reset();
+            showSection('book');
+        }
+    }
+
+    // --- Render Recipe Book ---
+    function renderBook() {
+        loadRecipes();
+        const ul = document.getElementById('recipe-list');
+        ul.innerHTML = '';
+        if (recipes.length === 0) {
+            document.getElementById('no-recipes').style.display = 'block';
+            return;
+        }
+        document.getElementById('no-recipes').style.display = 'none';
+        recipes.forEach(r => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span style="flex:1;"><a href="#" onclick="viewRecipe(${r.id})">${r.title}</a></span>
+            <span class="recipe-btns">
+                <button onclick="viewRecipe(${r.id})">View</button>
+                <button onclick="deleteRecipe(${r.id})">Delete</button>
+            </span>`;
+            ul.appendChild(li);
+        });
+    }
+
+    // --- View Recipe ---
+    function viewRecipe(id) {
+        currentId = id;
+        const r = recipes.find(x => x.id === id);
+        if (!r) return;
+        document.getElementById('view-title').textContent = r.title;
+        document.getElementById('view-ingredients').textContent = r.ingredients;
+        document.getElementById('view-instructions').textContent = r.instructions;
+        showSection('view');
+    }
+
+    // --- Edit Recipe ---
+    function editRecipe() {
+        const r = recipes.find(x => x.id === currentId);
+        if (!r) return;
+        document.getElementById('edit-title').value = r.title;
+        document.getElementById('edit-ingredients').value = r.ingredients;
+        document.getElementById('edit-instructions').value = r.instructions;
+        showSection('edit');
+    }
+    document.getElementById('edit-form').onsubmit = function(e){
+        e.preventDefault();
+        const title = document.getElementById('edit-title').value.trim();
+        const ingredients = document.getElementById('edit-ingredients').value.trim();
+        const instructions = document.getElementById('edit-instructions').value.trim();
+        if(title && ingredients && instructions){
+            const idx = recipes.findIndex(x => x.id === currentId);
+            if (idx > -1) {
+                recipes[idx] = {id: currentId, title, ingredients, instructions};
+                saveRecipes();
+                viewRecipe(currentId);
+            }
+        }
+    }
+
+    // --- Delete Recipe ---
+    function deleteRecipe(id) {
+        if(confirm("Delete this recipe?")){
+            recipes = recipes.filter(x=>x.id!==id);
+            saveRecipes();
+            renderBook();
+        }
+    }
+
+    // --- Daily Meal Prep ---
+    function showDailyMeal() {
+        loadRecipes();
+        const mealDiv = document.getElementById('meal-content');
+        if (recipes.length === 0) {
+            mealDiv.innerHTML = `<div class="alert">No recipes in book. Add some first!</div>`;
+            return;
+        }
+        let chosen = [];
+        if (recipes.length <= 3) chosen = [...recipes];
+        else {
+            const idxs = [];
+            while (chosen.length < 3) {
+                const i = Math.floor(Math.random() * recipes.length);
+                if (!idxs.includes(i)) { idxs.push(i); chosen.push(recipes[i]); }
+            }
+        }
+        mealDiv.innerHTML = chosen.map(r => `
+            <div class="card">
+                <h4>${r.title}</h4>
+                <strong>Ingredients:</strong>
+                <pre>${r.ingredients}</pre>
+            </div>
+        `).join('');
+    }
+
+    // --- Init ---
+    loadRecipes();
+    showSection('home');
+    </script>
+</body>
+</html>
