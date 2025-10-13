@@ -2,358 +2,303 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Recipe Book & Meal Planner</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal Planner & Recipe Book</title>
 <style>
-    :root {
-        --primary: #1976D2;
-        --primary-dark: #0D47A1;
-        --grey-light: #f4f6f8;
-        --grey-medium: #e0e0e0;
-        --grey-dark: #555;
-    }
-    body {
-        font-family: 'Segoe UI', sans-serif;
-        background: var(--grey-light);
-        margin: 0;
-        color: #333;
-    }
-    nav {
-        background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-        padding: 10px 0;
-        text-align: center;
-    }
-    nav a {
-        color: #fff;
-        margin: 0 20px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: opacity 0.3s;
-    }
-    nav a:hover, nav a.active { opacity: 0.8; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    color: #333;
+  }
+  nav {
+    background: #1e3a8a;
+    color: white;
+    padding: 12px 0;
+    text-align: center;
+  }
+  nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  nav a.active { text-decoration: underline; }
+  .container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 25px;
+  }
+  h1, h2 { text-align: center; color: #1e3a8a; }
+  .hidden { display: none; }
 
-    .container {
-        max-width: 900px;
-        margin: 30px auto;
-        background: #fff;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-    h1, h2 { text-align: center; color: var(--primary-dark); }
-
-    button, .btn {
-        background: var(--primary);
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 8px 16px;
-        margin-top: 12px;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    button:hover, .btn:hover { background: var(--primary-dark); }
-
-    input[type=text], textarea {
-        width: 100%;
-        padding: 8px;
-        margin-top: 6px;
-        border-radius: 5px;
-        border: 1px solid var(--grey-medium);
-        box-sizing: border-box;
-    }
-    textarea { resize: vertical; }
-
-    .recipe-list {
-        list-style: none;
-        padding: 0;
-    }
-    .recipe-list li {
-        background: #f9f9f9;
-        border: 1px solid var(--grey-medium);
-        border-radius: 6px;
-        margin-bottom: 10px;
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: box-shadow 0.2s;
-    }
-    .recipe-list li:hover {
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .hidden { display: none; }
-
-    .card {
-        background: #f8fbff;
-        border-left: 5px solid var(--primary);
-        border-radius: 6px;
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-
-    .alert {
-        background: #e3f2fd;
-        color: var(--primary-dark);
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-        margin-top: 15px;
-    }
-
-    /* --- Calendar --- */
-    .calendar {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 8px;
-        margin-top: 20px;
-    }
-    .day {
-        background: #f1f1f1;
-        border: 2px dashed #ccc;
-        border-radius: 8px;
-        padding: 10px;
-        min-height: 120px;
-        text-align: center;
-        transition: background 0.3s;
-    }
-    .day.drag-over {
-        background: #d0e8ff;
-        border-color: var(--primary);
-    }
-    .day h4 {
-        margin-top: 0;
-        color: var(--primary-dark);
-    }
-    .meal-item {
-        background: var(--primary);
-        color: white;
-        border-radius: 5px;
-        padding: 4px;
-        margin: 4px 0;
-        cursor: grab;
-    }
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  button:hover { background: #1d4ed8; }
+  ul { list-style: none; padding: 0; }
+  li {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card {
+    background: #f1f5f9;
+    padding: 5px 8px;
+    border-radius: 6px;
+    margin: 5px 0;
+  }
+  /* Calendar styling */
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .day {
+    background: #e2e8f0;
+    border-radius: 6px;
+    min-height: 140px;
+    padding: 8px;
+  }
+  .day h4 {
+    text-align: center;
+    background: #1e3a8a;
+    color: white;
+    border-radius: 4px;
+    padding: 4px;
+    margin-top: 0;
+  }
+  .draggable {
+    background: #3b82f6;
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 5px;
+    cursor: grab;
+  }
 </style>
 </head>
 <body>
 <nav>
-    <a href="#" id="nav-home" onclick="showSection('home')">Home</a>
-    <a href="#" id="nav-add" onclick="showSection('add')">Add Recipe</a>
-    <a href="#" id="nav-book" onclick="showSection('book')">Recipe Book</a>
-    <a href="#" id="nav-meal" onclick="showSection('meal')">Meal Planner</a>
+  <a href="#" id="nav-home" onclick="showSection('home')">Home</a>
+  <a href="#" id="nav-add" onclick="showSection('add')">Add Recipe</a>
+  <a href="#" id="nav-book" onclick="showSection('book')">Recipe Book</a>
+  <a href="#" id="nav-meal" onclick="showSection('meal')">Meal Planner</a>
 </nav>
 
 <div class="container">
-    <section id="home-section">
-        <h1>Recipe Book & Weekly Meal Planner</h1>
-        <p style="text-align:center;">Store recipes, view them, and drag them into your weekly meal calendar!</p>
-    </section>
 
-    <!-- Add Recipe -->
-    <section id="add-section" class="hidden">
-        <h2>Add New Recipe</h2>
-        <form id="add-form">
-            <label>Title</label>
-            <input type="text" id="add-title" required>
-            <label>Ingredients (one per line)</label>
-            <textarea id="add-ingredients" rows="4" required></textarea>
-            <label>Instructions</label>
-            <textarea id="add-instructions" rows="6" required></textarea>
-            <button type="submit">Add Recipe</button>
-        </form>
-    </section>
+  <!-- Home -->
+  <section id="home-section">
+    <h1>🍽️ Recipe Book & Weekly Meal Planner</h1>
+    <p style="text-align:center;">Save recipes and plan your meals for the week!</p>
+  </section>
 
-    <!-- Recipe Book -->
-    <section id="book-section" class="hidden">
-        <h2>Recipe Book</h2>
-        <ul id="recipe-list" class="recipe-list"></ul>
-        <div id="no-recipes" class="alert" style="display:none;">No recipes yet. Add some first!</div>
-    </section>
+  <!-- Add Recipe -->
+  <section id="add-section" class="hidden">
+    <h2>Add Recipe</h2>
+    <form id="add-form">
+      <label>Title</label>
+      <input type="text" id="add-title" required>
+      <label>Ingredients (one per line)</label>
+      <textarea id="add-ingredients" rows="4" required></textarea>
+      <label>Instructions</label>
+      <textarea id="add-instructions" rows="5" required></textarea>
+      <button type="submit">Add Recipe</button>
+    </form>
+  </section>
 
-    <!-- View/Edit Recipe -->
-    <section id="view-section" class="hidden">
-        <div class="card">
-            <h2 id="view-title"></h2>
-            <h4>Ingredients</h4>
-            <pre id="view-ingredients"></pre>
-            <h4>Instructions</h4>
-            <pre id="view-instructions"></pre>
-            <button id="edit-btn" onclick="editRecipe()">Edit</button>
-            <button onclick="showSection('book')">Back</button>
-        </div>
-    </section>
+  <!-- Recipe Book -->
+  <section id="book-section" class="hidden">
+    <h2>Recipe Book</h2>
+    <ul id="recipe-list"></ul>
+    <div id="no-recipes" style="text-align:center;color:#777;">No recipes yet. Add one above.</div>
+  </section>
 
-    <section id="edit-section" class="hidden">
-        <h2>Edit Recipe</h2>
-        <form id="edit-form">
-            <label>Title</label>
-            <input type="text" id="edit-title" required>
-            <label>Ingredients</label>
-            <textarea id="edit-ingredients" rows="4" required></textarea>
-            <label>Instructions</label>
-            <textarea id="edit-instructions" rows="6" required></textarea>
-            <button type="submit">Save</button>
-            <button type="button" onclick="showSection('view')">Cancel</button>
-        </form>
-    </section>
+  <!-- Meal Planner -->
+  <section id="meal-section" class="hidden">
+    <h2>Weekly Meal Planner</h2>
+    <p style="text-align:center;">Drag recipes from below into your weekly calendar. Right-click a meal to remove it.</p>
 
-    <!-- Meal Planner -->
-    <section id="meal-section" class="hidden">
-        <h2>Weekly Meal Planner</h2>
-        <div class="alert">Drag recipes from your book into the days below.</div>
-        <div class="calendar" id="calendar"></div>
-        <button onclick="clearMeals()">Clear Calendar</button>
-    </section>
+    <div class="calendar" id="calendar">
+      <div class="day" data-day="Monday"><h4>Monday</h4></div>
+      <div class="day" data-day="Tuesday"><h4>Tuesday</h4></div>
+      <div class="day" data-day="Wednesday"><h4>Wednesday</h4></div>
+      <div class="day" data-day="Thursday"><h4>Thursday</h4></div>
+      <div class="day" data-day="Friday"><h4>Friday</h4></div>
+      <div class="day" data-day="Saturday"><h4>Saturday</h4></div>
+      <div class="day" data-day="Sunday"><h4>Sunday</h4></div>
+    </div>
+
+    <h3 style="margin-top:30px;">Your Recipes</h3>
+    <div id="recipe-pool"></div>
+    <button onclick="clearCalendar()">Clear Calendar</button>
+  </section>
+
 </div>
 
 <script>
-let recipes = [];
-let currentId = null;
-let mealPlan = {};
-const daysOfWeek = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  let recipes = [];
+  let mealPlan = {}; // { Monday: [recipeId,...], Tuesday: [...] }
 
-// Storage
-function loadRecipes(){ recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); }
-function saveRecipes(){ localStorage.setItem('recipes', JSON.stringify(recipes)); }
-function loadMeals(){ mealPlan = JSON.parse(localStorage.getItem('mealPlan') || '{}'); }
-function saveMeals(){ localStorage.setItem('mealPlan', JSON.stringify(mealPlan)); }
+  // Load recipes & meals from localStorage
+  function loadData() {
+    recipes = JSON.parse(localStorage.getItem('recipes')) || [];
+    mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || {};
+  }
+  function saveRecipes() { localStorage.setItem('recipes', JSON.stringify(recipes)); }
+  function saveMealPlan() { localStorage.setItem('mealPlan', JSON.stringify(mealPlan)); }
 
-// Navigation
-function showSection(name){
-    ['home','add','book','meal','view','edit'].forEach(s=>{
-        document.getElementById(s+'-section').classList.add('hidden');
-        document.getElementById('nav-'+s)?.classList.remove('active');
+  // Navigation
+  function showSection(name) {
+    ['home','add','book','meal'].forEach(s => {
+      document.getElementById(s+'-section').classList.add('hidden');
+      document.getElementById('nav-'+s)?.classList.remove('active');
     });
     document.getElementById(name+'-section').classList.remove('hidden');
     document.getElementById('nav-'+name)?.classList.add('active');
     if(name==='book') renderBook();
-    if(name==='meal') renderCalendar();
-}
+    if(name==='meal') renderMealPlanner();
+  }
 
-// Add Recipe (fixed)
-document.getElementById('add-form').onsubmit = e => {
+  // Add Recipe
+  document.getElementById('add-form').addEventListener('submit', e => {
     e.preventDefault();
     const title = document.getElementById('add-title').value.trim();
     const ingredients = document.getElementById('add-ingredients').value.trim();
     const instructions = document.getElementById('add-instructions').value.trim();
-    if(title && ingredients && instructions){
-        recipes.push({id: Date.now(), title, ingredients, instructions});
-        saveRecipes();
-        e.target.reset();
-        showSection('book');
-    }
-};
+    if(!title || !ingredients || !instructions) return;
+    const newRecipe = { id: Date.now(), title, ingredients, instructions };
+    recipes.push(newRecipe);
+    saveRecipes();
+    e.target.reset();
+    alert("Recipe added!");
+    showSection('book');
+  });
 
-// Render Book
-function renderBook(){
-    loadRecipes();
-    const ul = document.getElementById('recipe-list');
-    ul.innerHTML = '';
-    if(recipes.length===0){ 
-        document.getElementById('no-recipes').style.display='block'; 
-        return; 
+  // Render Recipe Book
+  function renderBook() {
+    loadData();
+    const list = document.getElementById('recipe-list');
+    list.innerHTML = '';
+    if (recipes.length === 0) {
+      document.getElementById('no-recipes').style.display = 'block';
+      return;
     }
-    document.getElementById('no-recipes').style.display='none';
-    recipes.forEach(r=>{
-        const li=document.createElement('li');
-        li.draggable = true;
-        li.ondragstart = ev => ev.dataTransfer.setData('text/plain', r.title);
-        li.innerHTML=`<span><a href="#" onclick="viewRecipe(${r.id})">${r.title}</a></span>
-                      <span><button onclick="viewRecipe(${r.id})">View</button>
-                      <button onclick="deleteRecipe(${r.id})">Delete</button></span>`;
-        ul.appendChild(li);
+    document.getElementById('no-recipes').style.display = 'none';
+    recipes.forEach(r => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${r.title}</span>
+        <button onclick="deleteRecipe(${r.id})">Delete</button>`;
+      list.appendChild(li);
     });
-}
+  }
 
-// View/Edit
-function viewRecipe(id){
-    currentId=id;
-    const r=recipes.find(x=>x.id===id);
-    document.getElementById('view-title').textContent=r.title;
-    document.getElementById('view-ingredients').textContent=r.ingredients;
-    document.getElementById('view-instructions').textContent=r.instructions;
-    showSection('view');
-}
-function editRecipe(){
-    const r=recipes.find(x=>x.id===currentId);
-    document.getElementById('edit-title').value=r.title;
-    document.getElementById('edit-ingredients').value=r.ingredients;
-    document.getElementById('edit-instructions').value=r.instructions;
-    showSection('edit');
-}
-document.getElementById('edit-form').onsubmit = e=>{
-    e.preventDefault();
-    const idx=recipes.findIndex(x=>x.id===currentId);
-    if(idx>-1){
-        recipes[idx]={
-            id:currentId,
-            title:document.getElementById('edit-title').value.trim(),
-            ingredients:document.getElementById('edit-ingredients').value.trim(),
-            instructions:document.getElementById('edit-instructions').value.trim()
-        };
-        saveRecipes();
-        viewRecipe(currentId);
+  function deleteRecipe(id) {
+    if(confirm('Delete this recipe?')) {
+      recipes = recipes.filter(r => r.id !== id);
+      saveRecipes();
+      renderBook();
+      // Remove from meal plan if exists
+      Object.keys(mealPlan).forEach(day => {
+        mealPlan[day] = mealPlan[day].filter(i => i !== id);
+      });
+      saveMealPlan();
     }
-};
+  }
 
-// Delete
-function deleteRecipe(id){
-    if(confirm("Delete this recipe?")){
-        recipes=recipes.filter(x=>x.id!==id);
-        saveRecipes();
-        renderBook();
+  // Meal Planner
+  function renderMealPlanner() {
+    loadData();
+    const pool = document.getElementById('recipe-pool');
+    pool.innerHTML = '';
+    if(recipes.length === 0){
+      pool.innerHTML = "<p>No recipes yet. Add some first!</p>";
+    } else {
+      recipes.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'draggable';
+        div.textContent = r.title;
+        div.draggable = true;
+        div.dataset.id = r.id;
+        div.addEventListener('dragstart', handleDragStart);
+        pool.appendChild(div);
+      });
     }
-}
 
-// Calendar Drag & Drop
-function renderCalendar(){
-    loadMeals();
-    const cal=document.getElementById('calendar');
-    cal.innerHTML='';
-    daysOfWeek.forEach(day=>{
-        const div=document.createElement('div');
-        div.className='day';
-        div.id='day-'+day;
-        div.innerHTML=`<h4>${day}</h4><div id="meals-${day}"></div>`;
-        div.ondragover = ev => {ev.preventDefault(); div.classList.add('drag-over');};
-        div.ondragleave = () => div.classList.remove('drag-over');
-        div.ondrop = ev => {
-            ev.preventDefault();
-            div.classList.remove('drag-over');
-            const recipeTitle = ev.dataTransfer.getData('text/plain');
-            if(!mealPlan[day]) mealPlan[day]=[];
-            mealPlan[day].push(recipeTitle);
-            saveMeals();
-            renderCalendar();
-        };
-        const list = mealPlan[day]||[];
-        const mealsDiv = document.createElement('div');
-        list.forEach(title=>{
-            const meal=document.createElement('div');
-            meal.className='meal-item';
-            meal.textContent=title;
-            meal.title='Right-click to remove';
-            meal.oncontextmenu=(ev)=>{ev.preventDefault(); removeMeal(day,title);};
-            mealsDiv.appendChild(meal);
-        });
-        div.appendChild(mealsDiv);
-        cal.appendChild(div);
+    document.querySelectorAll('.day').forEach(day => {
+      day.innerHTML = `<h4>${day.dataset.day}</h4>`; // clear old meals
+      const dayMeals = mealPlan[day.dataset.day] || [];
+      dayMeals.forEach(rid => {
+        const recipe = recipes.find(r => r.id == rid);
+        if(recipe){
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.textContent = recipe.title;
+          card.oncontextmenu = (e) => {
+            e.preventDefault();
+            removeMeal(day.dataset.day, rid);
+          };
+          day.appendChild(card);
+        }
+      });
+      day.addEventListener('dragover', e => e.preventDefault());
+      day.addEventListener('drop', handleDrop);
     });
-}
-function removeMeal(day,title){
-    mealPlan[day]=mealPlan[day].filter(x=>x!==title);
-    saveMeals(); renderCalendar();
-}
-function clearMeals(){
-    if(confirm("Clear the entire meal plan?")){
-        mealPlan={}; saveMeals(); renderCalendar();
-    }
-}
+  }
 
-// Init
-loadRecipes(); loadMeals();
-showSection('home');
+  function handleDragStart(e) {
+    e.dataTransfer.setData('text/plain', e.target.dataset.id);
+  }
+
+  function handleDrop(e) {
+    const recipeId = parseInt(e.dataTransfer.getData('text/plain'));
+    const day = e.currentTarget.dataset.day;
+    if(!mealPlan[day]) mealPlan[day] = [];
+    mealPlan[day].push(recipeId);
+    saveMealPlan();
+    renderMealPlanner();
+  }
+
+  function removeMeal(day, recipeId){
+    mealPlan[day] = mealPlan[day].filter(id => id !== recipeId);
+    saveMealPlan();
+    renderMealPlanner();
+  }
+
+  function clearCalendar(){
+    if(confirm("Clear all meals from the calendar?")){
+      mealPlan = {};
+      saveMealPlan();
+      renderMealPlanner();
+    }
+  }
+
+  // Init
+  loadData();
+  showSection('home');
 </script>
 </body>
 </html>
