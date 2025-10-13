@@ -210,27 +210,18 @@
 <script>
 let recipes = [];
 let currentId = null;
-let mealPlan = {}; // { "Monday": [recipeTitle, ...], ... }
-
+let mealPlan = {};
 const daysOfWeek = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
-// --- Storage ---
-function loadRecipes() {
-    recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-}
-function saveRecipes() {
-    localStorage.setItem('recipes', JSON.stringify(recipes));
-}
-function loadMeals() {
-    mealPlan = JSON.parse(localStorage.getItem('mealPlan') || '{}');
-}
-function saveMeals() {
-    localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
-}
+// Storage
+function loadRecipes(){ recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); }
+function saveRecipes(){ localStorage.setItem('recipes', JSON.stringify(recipes)); }
+function loadMeals(){ mealPlan = JSON.parse(localStorage.getItem('mealPlan') || '{}'); }
+function saveMeals(){ localStorage.setItem('mealPlan', JSON.stringify(mealPlan)); }
 
-// --- Navigation ---
-function showSection(name) {
-    ['home','add','book','meal','view','edit'].forEach(s => {
+// Navigation
+function showSection(name){
+    ['home','add','book','meal','view','edit'].forEach(s=>{
         document.getElementById(s+'-section').classList.add('hidden');
         document.getElementById('nav-'+s)?.classList.remove('active');
     });
@@ -240,12 +231,12 @@ function showSection(name) {
     if(name==='meal') renderCalendar();
 }
 
-// --- Add Recipe ---
+// Add Recipe (fixed)
 document.getElementById('add-form').onsubmit = e => {
     e.preventDefault();
-    const title = addTitle.value.trim();
-    const ingredients = addIngredients.value.trim();
-    const instructions = addInstructions.value.trim();
+    const title = document.getElementById('add-title').value.trim();
+    const ingredients = document.getElementById('add-ingredients').value.trim();
+    const instructions = document.getElementById('add-instructions').value.trim();
     if(title && ingredients && instructions){
         recipes.push({id: Date.now(), title, ingredients, instructions});
         saveRecipes();
@@ -254,13 +245,16 @@ document.getElementById('add-form').onsubmit = e => {
     }
 };
 
-// --- Render Book ---
-function renderBook() {
+// Render Book
+function renderBook(){
     loadRecipes();
     const ul = document.getElementById('recipe-list');
     ul.innerHTML = '';
-    if(recipes.length===0){ noRecipes.style.display='block'; return; }
-    noRecipes.style.display='none';
+    if(recipes.length===0){ 
+        document.getElementById('no-recipes').style.display='block'; 
+        return; 
+    }
+    document.getElementById('no-recipes').style.display='none';
     recipes.forEach(r=>{
         const li=document.createElement('li');
         li.draggable = true;
@@ -272,35 +266,38 @@ function renderBook() {
     });
 }
 
-// --- View/Edit ---
+// View/Edit
 function viewRecipe(id){
     currentId=id;
     const r=recipes.find(x=>x.id===id);
-    viewTitle.textContent=r.title;
-    viewIngredients.textContent=r.ingredients;
-    viewInstructions.textContent=r.instructions;
+    document.getElementById('view-title').textContent=r.title;
+    document.getElementById('view-ingredients').textContent=r.ingredients;
+    document.getElementById('view-instructions').textContent=r.instructions;
     showSection('view');
 }
 function editRecipe(){
     const r=recipes.find(x=>x.id===currentId);
-    editTitle.value=r.title;
-    editIngredients.value=r.ingredients;
-    editInstructions.value=r.instructions;
+    document.getElementById('edit-title').value=r.title;
+    document.getElementById('edit-ingredients').value=r.ingredients;
+    document.getElementById('edit-instructions').value=r.instructions;
     showSection('edit');
 }
 document.getElementById('edit-form').onsubmit = e=>{
     e.preventDefault();
     const idx=recipes.findIndex(x=>x.id===currentId);
     if(idx>-1){
-        recipes[idx]={id:currentId, title:editTitle.value.trim(),
-                      ingredients:editIngredients.value.trim(),
-                      instructions:editInstructions.value.trim()};
+        recipes[idx]={
+            id:currentId,
+            title:document.getElementById('edit-title').value.trim(),
+            ingredients:document.getElementById('edit-ingredients').value.trim(),
+            instructions:document.getElementById('edit-instructions').value.trim()
+        };
         saveRecipes();
         viewRecipe(currentId);
     }
 };
 
-// --- Delete ---
+// Delete
 function deleteRecipe(id){
     if(confirm("Delete this recipe?")){
         recipes=recipes.filter(x=>x.id!==id);
@@ -309,9 +306,9 @@ function deleteRecipe(id){
     }
 }
 
-// --- Calendar + Drag & Drop ---
+// Calendar Drag & Drop
 function renderCalendar(){
-    loadRecipes(); loadMeals();
+    loadMeals();
     const cal=document.getElementById('calendar');
     cal.innerHTML='';
     daysOfWeek.forEach(day=>{
@@ -336,9 +333,7 @@ function renderCalendar(){
             const meal=document.createElement('div');
             meal.className='meal-item';
             meal.textContent=title;
-            meal.title='Drag to move or right-click to remove';
-            meal.draggable=true;
-            meal.ondragstart=ev=>ev.dataTransfer.setData('text/plain',title);
+            meal.title='Right-click to remove';
             meal.oncontextmenu=(ev)=>{ev.preventDefault(); removeMeal(day,title);};
             mealsDiv.appendChild(meal);
         });
@@ -356,7 +351,7 @@ function clearMeals(){
     }
 }
 
-// --- Init ---
+// Init
 loadRecipes(); loadMeals();
 showSection('home');
 </script>
