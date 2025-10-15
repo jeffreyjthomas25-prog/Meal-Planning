@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>🍴 My Fun Recipe Book & Meal Planner</title>
 
+<!-- html2canvas for snapshot -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 <style>
   body {
     font-family: 'Poppins', sans-serif;
@@ -18,302 +21,295 @@
     text-align: center;
     padding: 1.5rem;
     font-size: 1.8rem;
-    letter-spacing: 1px;
   }
   nav {
     display: flex;
     justify-content: center;
     background: #ffb6b9;
-    padding: 0.5rem;
+    padding: 0.6rem;
     gap: 1rem;
+    flex-wrap: wrap;
   }
   nav button {
     background: white;
     border: none;
-    padding: 0.7rem 1.2rem;
+    padding: 0.7rem 1.3rem;
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
     transition: 0.3s;
   }
   nav button:hover {
-    background: #fff7f8;
+    background: #fff7f0;
     transform: scale(1.05);
   }
-  nav button.active {
-    background: #ff6b6b;
+
+  .container {
+    max-width: 950px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 2rem;
+  }
+  h2 {
+    text-align: center;
+    color: #ff6b6b;
+  }
+
+  /* calendar grid */
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .day {
+    background: #fff3f3;
+    border-radius: 8px;
+    min-height: 140px;
+    padding: 8px;
+    border: 2px dashed #ffa9a3;
+  }
+  .day h4 {
+    text-align: center;
+    background: #ffb6b9;
     color: white;
+    border-radius: 6px;
+    margin-top: 0;
+    padding: 4px;
   }
-  section {
-    padding: 1.5rem;
-    display: none;
+
+  .draggable {
+    background: #ff8fa3;
+    color: white;
+    border-radius: 6px;
+    padding: 5px 6px;
+    margin: 5px 0;
+    cursor: grab;
+    text-align: center;
+    font-weight: 600;
   }
-  section.active {
+
+  button.main {
     display: block;
-  }
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  input, textarea {
-    width: 100%;
-    padding: 0.6rem;
-    border: 2px solid #ffb6b9;
-    border-radius: 10px;
-  }
-  button.add {
-    background: #ff6b6b;
+    margin: 1.2rem auto;
+    padding: 10px 16px;
+    background: #ff8fa3;
     color: white;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 25px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     transition: 0.3s;
   }
-  button.add:hover {
-    background: #ff8787;
+  button.main:hover {
+    background: #ff6b6b;
   }
-  .recipe-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 1.5rem;
+
+  #recipe-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
   }
+
   .recipe-card {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    width: 150px;
+    background: #ffe0e9;
+    border-radius: 10px;
+    text-align: center;
     overflow: hidden;
-    transition: 0.3s;
-  }
-  .recipe-card:hover {
-    transform: scale(1.03);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
   .recipe-card img {
     width: 100%;
-    height: 140px;
+    height: 100px;
     object-fit: cover;
   }
-  .recipe-card-content {
-    padding: 1rem;
-  }
-  .recipe-card h3 {
+  .recipe-card h5 {
     margin: 0;
-    font-size: 1.2rem;
+    padding: 8px;
     color: #ff6b6b;
   }
-  .recipe-card button {
-    background: #ffb6b9;
-    border: none;
-    border-radius: 10px;
-    padding: 0.4rem 0.8rem;
-    margin-top: 0.6rem;
-    cursor: pointer;
-  }
-  #meal-planner {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-  }
-  .day {
-    background: white;
-    border-radius: 15px;
-    min-height: 200px;
-    padding: 1rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-  .day h4 {
-    margin-top: 0;
-    color: #ff6b6b;
-  }
-  .draggable {
-    background: #ffe5ec;
-    margin: 0.3rem 0;
-    padding: 0.4rem;
-    border-radius: 10px;
-    cursor: grab;
-  }
-  footer {
+
+  #share-result {
     text-align: center;
-    padding: 1rem;
-    background: #ff6b6b;
-    color: white;
-    margin-top: 2rem;
+    color: green;
+    margin-top: 10px;
+    font-weight: 600;
   }
 </style>
 </head>
 
 <body>
-  <header>🍓 My Fun Recipe Book & Meal Planner 🍔</header>
+<header>🍕 My Fun Recipe Book & Meal Planner 🍓</header>
 
-  <nav>
-    <button id="nav-home" class="active">🏠 Home</button>
-    <button id="nav-add">➕ Add Recipe</button>
-    <button id="nav-book">📖 Recipe Book</button>
-    <button id="nav-meal">🗓️ Meal Planner</button>
-  </nav>
+<nav>
+  <button onclick="showSection('home')">Home</button>
+  <button onclick="showSection('add')">Add Recipe</button>
+  <button onclick="showSection('book')">Recipe Book</button>
+  <button onclick="showSection('meal')">Meal Planner</button>
+</nav>
 
-  <section id="home-section" class="active">
-    <h2>Welcome!</h2>
-    <p>Use this fun and colorful app to save your favorite recipes and plan your meals for the week!</p>
-    <p>🍕 Click <strong>Add Recipe</strong> to add new dishes</p>
-    <p>📖 View them in your <strong>Recipe Book</strong></p>
-    <p>🗓️ Drag them into your <strong>Meal Planner</strong> to organize your week</p>
+<div class="container">
+  <!-- Home -->
+  <section id="home-section">
+    <h2>Welcome to Your Colorful Kitchen!</h2>
+    <p style="text-align:center;">
+      Add tasty recipes, plan your meals for the week, and share them with friends! 🌮🍰
+    </p>
   </section>
 
-  <section id="add-section">
-    <h2>➕ Add a New Recipe</h2>
+  <!-- Add Recipe -->
+  <section id="add-section" class="hidden">
+    <h2>Add a Recipe</h2>
     <form id="add-form">
-      <div class="form-group">
-        <label>Recipe Name</label>
-        <input type="text" id="title" required />
-      </div>
-      <div class="form-group">
-        <label>Ingredients</label>
-        <textarea id="ingredients" rows="3" required></textarea>
-      </div>
-      <div class="form-group">
-        <label>Instructions</label>
-        <textarea id="instructions" rows="3" required></textarea>
-      </div>
-      <button type="submit" class="add">Add Recipe</button>
+      <label>Title:</label>
+      <input id="title" required><br><br>
+      <label>Ingredients (one per line):</label><br>
+      <textarea id="ingredients" rows="4" required></textarea><br><br>
+      <label>Instructions:</label><br>
+      <textarea id="instructions" rows="5" required></textarea><br>
+      <button type="submit" class="main">Add Recipe 🍳</button>
     </form>
   </section>
 
-  <section id="book-section">
-    <h2>📖 My Recipe Book</h2>
-    <div id="recipes" class="recipe-list"></div>
+  <!-- Recipe Book -->
+  <section id="book-section" class="hidden">
+    <h2>Your Recipe Book 📖</h2>
+    <div id="recipe-pool"></div>
   </section>
 
-  <section id="meal-section">
-    <h2>🗓️ Weekly Meal Planner</h2>
-    <div id="meal-planner"></div>
-  </section>
+  <!-- Meal Planner -->
+  <section id="meal-section" class="hidden">
+    <h2>Weekly Meal Planner 🥗</h2>
+    <p style="text-align:center;">Drag recipes into your days!</p>
+    <div id="calendar" class="calendar"></div>
 
-  <footer>🍰 Made with love and snacks</footer>
+    <button class="main" onclick="shareMealPlan()">📸 Share Meal Plan as Image</button>
+    <div id="share-result"></div>
+  </section>
+</div>
 
 <script>
-  const navButtons = document.querySelectorAll('nav button');
-  const sections = document.querySelectorAll('section');
-  const recipesDiv = document.getElementById('recipes');
-  const mealPlanner = document.getElementById('meal-planner');
-
-  const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-  let recipes = JSON.parse(localStorage.getItem('recipes')) || [];
-  let mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || {};
-
   const foodPics = [
-    "https://images.unsplash.com/photo-1604908811709-8f4e88cd9f7c",
     "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
-    "https://images.unsplash.com/photo-1551218808-94e220e084d2",
-    "https://images.unsplash.com/photo-1586190848861-99aa4a171e90",
-    "https://images.unsplash.com/photo-1512058564366-18510be2db19",
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836"
+    "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe",
+    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",
+    "https://images.unsplash.com/photo-1498579150354-977475b7ea0b",
+    "https://images.unsplash.com/photo-1512058564366-c9e9f4f3e6b7"
   ];
 
-  function showSection(id) {
-    sections.forEach(s => s.classList.remove('active'));
-    navButtons.forEach(b => b.classList.remove('active'));
-    document.getElementById(id + '-section').classList.add('active');
-    document.getElementById('nav-' + id).classList.add('active');
-    if (id === 'book') renderBook();
-    if (id === 'meal') renderMealPlanner();
+  let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+  let mealPlan = JSON.parse(localStorage.getItem("mealPlan")) || {};
+
+  function saveData() {
+    localStorage.setItem("recipes", JSON.stringify(recipes));
+    localStorage.setItem("mealPlan", JSON.stringify(mealPlan));
   }
 
-  navButtons.forEach(btn => {
-    btn.addEventListener('click', () => showSection(btn.id.replace('nav-','')));
-  });
+  function showSection(id) {
+    ["home","add","book","meal"].forEach(sec => {
+      document.getElementById(sec+"-section").classList.add("hidden");
+    });
+    document.getElementById(id+"-section").classList.remove("hidden");
+    if(id==="book") renderBook();
+    if(id==="meal") renderMealPlanner();
+  }
 
-  document.getElementById('add-form').addEventListener('submit', e => {
+  document.getElementById("add-form").addEventListener("submit", e=>{
     e.preventDefault();
-    const title = document.getElementById('title').value;
-    const ingredients = document.getElementById('ingredients').value;
-    const instructions = document.getElementById('instructions').value;
-    const image = foodPics[Math.floor(Math.random() * foodPics.length)];
-    recipes.push({ title, ingredients, instructions, image });
-    localStorage.setItem('recipes', JSON.stringify(recipes));
+    const newRecipe = {
+      id: Date.now(),
+      title: title.value,
+      ingredients: ingredients.value,
+      instructions: instructions.value,
+      img: foodPics[Math.floor(Math.random()*foodPics.length)]
+    };
+    recipes.push(newRecipe);
+    saveData();
     e.target.reset();
-    alert("🍴 Recipe added!");
-    showSection('book');
+    alert("Recipe added!");
+    showSection("book");
   });
 
-  function renderBook() {
-    recipesDiv.innerHTML = '';
-    if (recipes.length === 0) {
-      recipesDiv.innerHTML = '<p>No recipes yet! Add some delicious ones 🍕</p>';
-      return;
-    }
-    recipes.forEach((r, i) => {
-      const div = document.createElement('div');
-      div.className = 'recipe-card';
-      div.innerHTML = `
-        <img src="${r.image}" alt="${r.title}">
-        <div class="recipe-card-content">
-          <h3>${r.title}</h3>
-          <p><strong>Ingredients:</strong> ${r.ingredients}</p>
-          <p><strong>Instructions:</strong> ${r.instructions}</p>
-          <button onclick="deleteRecipe(${i})">🗑️ Delete</button>
-        </div>
-      `;
-      recipesDiv.appendChild(div);
+  function renderBook(){
+    const pool=document.getElementById("recipe-pool");
+    pool.innerHTML="";
+    if(recipes.length===0){ pool.innerHTML="<p>No recipes yet.</p>"; return; }
+    recipes.forEach(r=>{
+      const div=document.createElement("div");
+      div.className="recipe-card";
+      div.innerHTML=`<img src="${r.img}" alt="">
+                     <h5>${r.title}</h5>`;
+      div.draggable=true;
+      div.dataset.id=r.id;
+      div.addEventListener("dragstart", handleDragStart);
+      pool.appendChild(div);
     });
   }
 
-  function deleteRecipe(index) {
-    if (confirm("Delete this recipe?")) {
-      recipes.splice(index, 1);
-      localStorage.setItem('recipes', JSON.stringify(recipes));
-      renderBook();
-    }
-  }
-
-  function renderMealPlanner() {
-    mealPlanner.innerHTML = '';
-    days.forEach(day => {
-      const div = document.createElement('div');
-      div.className = 'day';
-      div.dataset.day = day;
-      div.innerHTML = `<h4>${day}</h4>`;
-      const meals = mealPlan[day] || [];
-      meals.forEach(idx => {
-        const r = recipes[idx];
-        if (r) {
-          const card = document.createElement('div');
-          card.className = 'draggable';
-          card.textContent = r.title;
-          div.appendChild(card);
+  function renderMealPlanner(){
+    const cal=document.getElementById("calendar");
+    cal.innerHTML="";
+    const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    days.forEach(day=>{
+      const div=document.createElement("div");
+      div.className="day";
+      div.dataset.day=day;
+      div.innerHTML=`<h4>${day}</h4>`;
+      const meals=mealPlan[day]||[];
+      meals.forEach(id=>{
+        const r=recipes.find(x=>x.id==id);
+        if(r){
+          const el=document.createElement("div");
+          el.className="draggable";
+          el.textContent=r.title;
+          div.appendChild(el);
         }
       });
-      div.addEventListener('dragover', e => e.preventDefault());
-      div.addEventListener('drop', e => handleDrop(e, day));
-      mealPlanner.appendChild(div);
+      div.addEventListener("dragover", e=>e.preventDefault());
+      div.addEventListener("drop", handleDrop);
+      cal.appendChild(div);
     });
-
-    const pool = document.createElement('div');
-    pool.className = 'day';
-    pool.innerHTML = "<h4>Recipe Pool</h4>";
-    recipes.forEach((r, i) => {
-      const dragItem = document.createElement('div');
-      dragItem.className = 'draggable';
-      dragItem.draggable = true;
-      dragItem.textContent = r.title;
-      dragItem.dataset.index = i;
-      dragItem.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', i));
-      pool.appendChild(dragItem);
-    });
-    mealPlanner.prepend(pool);
   }
 
-  function handleDrop(e, day) {
-    const index = e.dataTransfer.getData('text/plain');
-    if (!mealPlan[day]) mealPlan[day] = [];
-    mealPlan[day].push(index);
-    localStorage.setItem('mealPlan', JSON.stringify(mealPlan));
+  function handleDragStart(e){ e.dataTransfer.setData("text/plain", e.target.dataset.id); }
+  function handleDrop(e){
+    const rid=parseInt(e.dataTransfer.getData("text/plain"));
+    const day=e.currentTarget.dataset.day;
+    if(!mealPlan[day]) mealPlan[day]=[];
+    mealPlan[day].push(rid);
+    saveData();
     renderMealPlanner();
   }
 
-  renderBook();
-  renderMealPlanner();
+  async function shareMealPlan(){
+    const calendar=document.getElementById("calendar");
+    html2canvas(calendar,{backgroundColor:null}).then(canvas=>{
+      const imgURL=canvas.toDataURL("image/png");
+
+      const link=document.createElement("a");
+      link.href=imgURL;
+      link.download="meal-plan.png";
+      link.click();
+
+      // Optional: share on mobile
+      if(navigator.share){
+        navigator.share({
+          title:"My Meal Plan 🍽️",
+          text:"Here’s my weekly meal plan!",
+          files: [new File([canvas.toDataURL("image/png")],"meal-plan.png",{type:"image/png"})]
+        }).catch(()=>{});
+      }
+
+      document.getElementById("share-result").textContent="✅ Meal Plan image saved/downloaded!";
+    });
+  }
+
+  showSection("home");
 </script>
 </body>
 </html>
