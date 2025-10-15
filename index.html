@@ -108,6 +108,7 @@
   <section id="add-section" class="hidden">
     <h2>Add a Recipe</h2>
     <input id="title" placeholder="Recipe title" />
+    <input type="file" id="image" accept="image/*" />
     <textarea id="ingredients" placeholder="Ingredients (comma separated)"></textarea>
     <textarea id="instructions" placeholder="Instructions"></textarea>
     <button onclick="addRecipe()">Add Recipe 🍳</button>
@@ -122,7 +123,7 @@
   <!-- Meal Planner -->
   <section id="meal-section" class="hidden">
     <h2>Weekly Meal Planner 🥗</h2>
-    <p style="text-align:center;">Drag recipes below into each day. Right-click to remove.</p>
+    <p style="text-align:center;">Drag recipes below into each day. Double-click a recipe to remove.</p>
     <div class="calendar" id="calendar"></div>
     <h3>Your Recipes:</h3>
     <div id="recipe-pool"></div>
@@ -154,17 +155,36 @@ function showSection(id){
 
 // Add Recipe
 function addRecipe(){
-  const titleV=document.getElementById('title').value.trim();
-  const ingredientsV=document.getElementById('ingredients').value.trim();
-  const instructionsV=document.getElementById('instructions').value.trim();
+  const titleV = document.getElementById('title').value.trim();
+  const ingredientsV = document.getElementById('ingredients').value.trim();
+  const instructionsV = document.getElementById('instructions').value.trim();
+  const imageInput = document.getElementById('image').files[0];
+
   if(!titleV) return alert("Enter a title!");
-  const recipe={title:titleV, ingredients:ingredientsV, instructions:instructionsV, image:`https://source.unsplash.com/600x400/?food,${encodeURIComponent(titleV)}`};
+
+  if(imageInput){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const imgData = e.target.result;
+      saveRecipe(titleV, ingredientsV, instructionsV, imgData);
+    }
+    reader.readAsDataURL(imageInput);
+  } else {
+    const imgData = `https://source.unsplash.com/600x400/?food,${encodeURIComponent(titleV)}`;
+    saveRecipe(titleV, ingredientsV, instructionsV, imgData);
+  }
+}
+
+function saveRecipe(titleV, ingredientsV, instructionsV, imgData){
+  const recipe = { title: titleV, ingredients: ingredientsV, instructions: instructionsV, image: imgData };
   recipes.push(recipe);
   saveData();
   displayRecipes();
+  renderMealPlanner();
   document.getElementById('title').value='';
   document.getElementById('ingredients').value='';
   document.getElementById('instructions').value='';
+  document.getElementById('image').value='';
 }
 
 // Display recipes
@@ -203,15 +223,24 @@ function renderMealPlanner(){
     const meals=mealPlan[day]||[];
     meals.forEach(title=>{
       const card=document.createElement('div');
+      const recipe = recipes.find(r=>r.title===title);
       card.className='draggable';
       card.textContent=title;
-      card.oncontextmenu=e=>{e.preventDefault(); removeMeal(day,title);};
+      if(recipe && recipe.image){
+        card.style.backgroundImage = `url('${recipe.image}')`;
+        card.style.backgroundSize='cover';
+        card.style.color='white';
+        card.style.padding='20px 5px';
+      }
+      // Double-click to remove
+      card.ondblclick = ()=>removeMeal(day,title);
       div.appendChild(card);
     });
     div.addEventListener('dragover',e=>e.preventDefault());
     div.addEventListener('drop',handleDrop);
     calendar.appendChild(div);
   });
+
   // Recipe Pool
   const pool=document.getElementById('recipe-pool');
   pool.innerHTML='';
