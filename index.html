@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meal Planner & Recipe Book</title>
+<title>Recipe Book & Meal Planner</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
-    background: #f0f4f8;
+    background: #eef2f6;
     margin: 0;
     color: #333;
   }
@@ -34,7 +34,6 @@
   }
   h1, h2 { text-align: center; color: #1e3a8a; }
   .hidden { display: none; }
-
   input, textarea {
     width: 100%;
     padding: 8px;
@@ -69,7 +68,6 @@
     border-radius: 6px;
     margin: 5px 0;
   }
-  /* Calendar styling */
   .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -98,12 +96,34 @@
     margin-top: 5px;
     cursor: grab;
   }
+  #recipe-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+  #modal-content {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  #modal-content h3 { color: #1e3a8a; margin-top: 0; }
+  #close-modal { background: #ef4444; margin-top: 10px; }
+  #print-modal { background: #059669; margin-top: 10px; }
 </style>
 </head>
 <body>
 <nav>
   <a href="#" id="nav-home" onclick="showSection('home')">Home</a>
   <a href="#" id="nav-add" onclick="showSection('add')">Add Recipe</a>
+  <a href="#" id="nav-scrape" onclick="showSection('scrape')">Scrape Recipe</a>
   <a href="#" id="nav-book" onclick="showSection('book')">Recipe Book</a>
   <a href="#" id="nav-meal" onclick="showSection('meal')">Meal Planner</a>
 </nav>
@@ -112,8 +132,8 @@
 
   <!-- Home -->
   <section id="home-section">
-    <h1>🍽️ Recipe Book & Weekly Meal Planner</h1>
-    <p style="text-align:center;">Save recipes and plan your meals for the week!</p>
+    <h1>🍴 Recipe Book & Weekly Meal Planner</h1>
+    <p style="text-align:center;">Save or scrape recipes and organize them for your week!</p>
   </section>
 
   <!-- Add Recipe -->
@@ -130,17 +150,25 @@
     </form>
   </section>
 
+  <!-- Scrape Recipe -->
+  <section id="scrape-section" class="hidden">
+    <h2>Scrape Recipe from URL</h2>
+    <p>Paste a recipe link below. This demo will auto-fill fake data (since direct scraping isn’t allowed in browsers).</p>
+    <input type="url" id="recipe-url" placeholder="https://example.com/recipe">
+    <button onclick="scrapeRecipe()">Scrape Recipe</button>
+  </section>
+
   <!-- Recipe Book -->
   <section id="book-section" class="hidden">
     <h2>Recipe Book</h2>
     <ul id="recipe-list"></ul>
-    <div id="no-recipes" style="text-align:center;color:#777;">No recipes yet. Add one above.</div>
+    <div id="no-recipes" style="text-align:center;color:#777;">No recipes yet. Add or scrape one.</div>
   </section>
 
   <!-- Meal Planner -->
   <section id="meal-section" class="hidden">
     <h2>Weekly Meal Planner</h2>
-    <p style="text-align:center;">Drag recipes from below into your weekly calendar. Right-click a meal to remove it.</p>
+    <p style="text-align:center;">Drag recipes into each day. Right-click to remove.</p>
 
     <div class="calendar" id="calendar">
       <div class="day" data-day="Monday"><h4>Monday</h4></div>
@@ -156,14 +184,25 @@
     <div id="recipe-pool"></div>
     <button onclick="clearCalendar()">Clear Calendar</button>
   </section>
+</div>
 
+<!-- Modal -->
+<div id="recipe-modal">
+  <div id="modal-content">
+    <h3 id="modal-title"></h3>
+    <h4>Ingredients</h4>
+    <ul id="modal-ingredients"></ul>
+    <h4>Instructions</h4>
+    <p id="modal-instructions"></p>
+    <button id="print-modal">Print Recipe</button>
+    <button id="close-modal">Close</button>
+  </div>
 </div>
 
 <script>
   let recipes = [];
-  let mealPlan = {}; // { Monday: [recipeId,...], Tuesday: [...] }
+  let mealPlan = {};
 
-  // Load recipes & meals from localStorage
   function loadData() {
     recipes = JSON.parse(localStorage.getItem('recipes')) || [];
     mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || {};
@@ -171,9 +210,8 @@
   function saveRecipes() { localStorage.setItem('recipes', JSON.stringify(recipes)); }
   function saveMealPlan() { localStorage.setItem('mealPlan', JSON.stringify(mealPlan)); }
 
-  // Navigation
   function showSection(name) {
-    ['home','add','book','meal'].forEach(s => {
+    ['home','add','scrape','book','meal'].forEach(s => {
       document.getElementById(s+'-section').classList.add('hidden');
       document.getElementById('nav-'+s)?.classList.remove('active');
     });
@@ -183,7 +221,6 @@
     if(name==='meal') renderMealPlanner();
   }
 
-  // Add Recipe
   document.getElementById('add-form').addEventListener('submit', e => {
     e.preventDefault();
     const title = document.getElementById('add-title').value.trim();
@@ -198,105 +235,128 @@
     showSection('book');
   });
 
-  // Render Recipe Book
+  function scrapeRecipe() {
+    const url = document.getElementById('recipe-url').value.trim();
+    if(!url) return alert("Enter a URL!");
+    // Simulated scraped data
+    const title = "Scraped Recipe from " + new URL(url).hostname;
+    const ingredients = "1 cup example ingredient\n2 tbsp something tasty\nSalt to taste";
+    const instructions = "1. Mix ingredients.\n2. Cook or bake until done.\n3. Enjoy!";
+    const newRecipe = { id: Date.now(), title, ingredients, instructions };
+    recipes.push(newRecipe);
+    saveRecipes();
+    alert("Fake scraped recipe added!");
+    document.getElementById('recipe-url').value = '';
+    showSection('book');
+  }
+
   function renderBook() {
     loadData();
     const list = document.getElementById('recipe-list');
     list.innerHTML = '';
-    if (recipes.length === 0) {
+    if(recipes.length === 0){
       document.getElementById('no-recipes').style.display = 'block';
       return;
     }
     document.getElementById('no-recipes').style.display = 'none';
-    recipes.forEach(r => {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${r.title}</span>
-        <button onclick="deleteRecipe(${r.id})">Delete</button>`;
+    recipes.forEach(r=>{
+      const li=document.createElement('li');
+      li.innerHTML=`<span style="cursor:pointer;font-weight:bold;" onclick="openRecipe(${r.id})">${r.title}</span>
+      <button onclick="deleteRecipe(${r.id})">Delete</button>`;
       list.appendChild(li);
     });
   }
 
-  function deleteRecipe(id) {
-    if(confirm('Delete this recipe?')) {
-      recipes = recipes.filter(r => r.id !== id);
+  function deleteRecipe(id){
+    if(confirm("Delete this recipe?")){
+      recipes = recipes.filter(r=>r.id!==id);
       saveRecipes();
       renderBook();
-      // Remove from meal plan if exists
-      Object.keys(mealPlan).forEach(day => {
-        mealPlan[day] = mealPlan[day].filter(i => i !== id);
+      Object.keys(mealPlan).forEach(day=>{
+        mealPlan[day]=mealPlan[day].filter(i=>i!==id);
       });
       saveMealPlan();
     }
   }
 
-  // Meal Planner
-  function renderMealPlanner() {
+  function openRecipe(id){
+    const r = recipes.find(x=>x.id===id);
+    if(!r) return;
+    document.getElementById('modal-title').textContent = r.title;
+    document.getElementById('modal-ingredients').innerHTML = r.ingredients.split('\n').map(i=>`<li>${i}</li>`).join('');
+    document.getElementById('modal-instructions').textContent = r.instructions;
+    document.getElementById('recipe-modal').style.display='flex';
+    document.getElementById('print-modal').onclick = ()=>printRecipe(r);
+  }
+
+  function printRecipe(r){
+    const printWin = window.open('', '', 'width=800,height=600');
+    printWin.document.write(`<h2>${r.title}</h2><h4>Ingredients</h4><pre>${r.ingredients}</pre><h4>Instructions</h4><pre>${r.instructions}</pre>`);
+    printWin.document.close();
+    printWin.print();
+  }
+
+  document.getElementById('close-modal').onclick=()=>document.getElementById('recipe-modal').style.display='none';
+  window.onclick=(e)=>{if(e.target.id==='recipe-modal')document.getElementById('recipe-modal').style.display='none';};
+
+  function renderMealPlanner(){
     loadData();
-    const pool = document.getElementById('recipe-pool');
-    pool.innerHTML = '';
-    if(recipes.length === 0){
-      pool.innerHTML = "<p>No recipes yet. Add some first!</p>";
+    const pool=document.getElementById('recipe-pool');
+    pool.innerHTML='';
+    if(recipes.length===0){
+      pool.innerHTML="<p>No recipes yet.</p>";
     } else {
-      recipes.forEach(r => {
-        const div = document.createElement('div');
-        div.className = 'draggable';
-        div.textContent = r.title;
-        div.draggable = true;
-        div.dataset.id = r.id;
+      recipes.forEach(r=>{
+        const div=document.createElement('div');
+        div.className='draggable';
+        div.textContent=r.title;
+        div.draggable=true;
+        div.dataset.id=r.id;
         div.addEventListener('dragstart', handleDragStart);
         pool.appendChild(div);
       });
     }
 
-    document.querySelectorAll('.day').forEach(day => {
-      day.innerHTML = `<h4>${day.dataset.day}</h4>`; // clear old meals
-      const dayMeals = mealPlan[day.dataset.day] || [];
-      dayMeals.forEach(rid => {
-        const recipe = recipes.find(r => r.id == rid);
+    document.querySelectorAll('.day').forEach(day=>{
+      day.innerHTML=`<h4>${day.dataset.day}</h4>`;
+      const meals=mealPlan[day.dataset.day]||[];
+      meals.forEach(rid=>{
+        const recipe=recipes.find(r=>r.id==rid);
         if(recipe){
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.textContent = recipe.title;
-          card.oncontextmenu = (e) => {
-            e.preventDefault();
-            removeMeal(day.dataset.day, rid);
-          };
+          const card=document.createElement('div');
+          card.className='card';
+          card.textContent=recipe.title;
+          card.oncontextmenu=(e)=>{e.preventDefault();removeMeal(day.dataset.day,rid);};
           day.appendChild(card);
         }
       });
-      day.addEventListener('dragover', e => e.preventDefault());
+      day.addEventListener('dragover', e=>e.preventDefault());
       day.addEventListener('drop', handleDrop);
     });
   }
 
-  function handleDragStart(e) {
-    e.dataTransfer.setData('text/plain', e.target.dataset.id);
-  }
-
-  function handleDrop(e) {
-    const recipeId = parseInt(e.dataTransfer.getData('text/plain'));
-    const day = e.currentTarget.dataset.day;
-    if(!mealPlan[day]) mealPlan[day] = [];
-    mealPlan[day].push(recipeId);
+  function handleDragStart(e){e.dataTransfer.setData('text/plain', e.target.dataset.id);}
+  function handleDrop(e){
+    const rid=parseInt(e.dataTransfer.getData('text/plain'));
+    const day=e.currentTarget.dataset.day;
+    if(!mealPlan[day]) mealPlan[day]=[];
+    mealPlan[day].push(rid);
     saveMealPlan();
     renderMealPlanner();
   }
-
-  function removeMeal(day, recipeId){
-    mealPlan[day] = mealPlan[day].filter(id => id !== recipeId);
+  function removeMeal(day,rid){
+    mealPlan[day]=mealPlan[day].filter(i=>i!==rid);
     saveMealPlan();
     renderMealPlanner();
   }
-
   function clearCalendar(){
-    if(confirm("Clear all meals from the calendar?")){
-      mealPlan = {};
+    if(confirm("Clear all meals?")){
+      mealPlan={};
       saveMealPlan();
       renderMealPlanner();
     }
   }
 
-  // Init
   loadData();
   showSection('home');
 </script>
